@@ -1,9 +1,17 @@
-Now why did you click on this?
-Anyways, about the project(s):
-The steps to any idea = action_x_time
+                                          Список компонентів и функциональность
 
-Language codex is a progressable dictionary like database for artificial intelligence language learning models. 
-Progression in multiple langauges is needed.
+Arduino R3 
+MFRC522
+LoRa_Reyax896
+UNL2003 STEPPER INTERVAL MOTOR
+2 x 9-VOLT BATTERY POWER SUPPLY
 
-The P.K.S. (Programmable Key System) is a variant architecture for an alternative wireless structure of components.
-Models can be extended with microcontrollers and set up home systems to connect to a python/C/C++ mainframe.
+Built to withstand power outtages and provide high density surface penetration. 
+The system needs two different power supplies (its a hog) with a the UNL2003 motor unit. 
+As well as properly configured resistors for the Reyax pins. 
+
+>>Set-up nodes with rfid readers, that relay live activity to the home station<<
+>>From the home station, using the //program// you can add/remove keys<<
+>>Both LoRa modules need to be on the same frequency, and network, with different addresses on the network<<'
+>>The password function adds encryption, both LoRa need to have the password<<
+>>The micro-controller buad rate must match the LoRa, same with the LoRa and the serial monitor //program//
