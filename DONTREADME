@@ -7,11 +7,17 @@ UNL2003 STEPPER INTERVAL MOTOR
 2 x 9-VOLT BATTERY POWER SUPPLY
 
 Built to withstand power outtages and provide high density surface penetration. 
-The system needs two different power supplies (its a hog) with a the UNL2003 motor unit. 
+The system needs two different power supplies if using the UNL2003 motor unit. 
 As well as properly configured resistors for the Reyax pins. 
+
+>>Настройте узлы с RFID-считывателями, которые ретранслируют живую активность на домашнюю станцию 
+>С домашней станции с помощью программы //можно добавить/удалить ключи 
+>Оба модуля LoRa должны быть на одной частоте и сети, с разными адресами в сети 
+>Функция пароля добавляет шифрование, оба LoRa должны иметь пароль
+>Скорость микроконтроллера должна соответствовать LoRa, то же самое с LoRa и последовательным монитором //program//
 
 >>Set-up nodes with rfid readers, that relay live activity to the home station<<
 >>From the home station, using the //program// you can add/remove keys<<
->>Both LoRa modules need to be on the same frequency, and network, with different addresses on the network<<'
+>>Both LoRa modules need to be on the same frequency, and network, with different addresses on the network<<
 >>The password function adds encryption, both LoRa need to have the password<<
 >>The micro-controller buad rate must match the LoRa, same with the LoRa and the serial monitor //program//
