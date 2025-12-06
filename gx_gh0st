@@ -1,0 +1,239 @@
+// ===============================
+//       LIBRARIES
+// ===============================
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include "Adafruit_Keypad.h"
+
+// ===============================
+//       OLED DEFINITIONS
+// ===============================
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+#define SCREEN_ADDRESS 0x3C
+#define SDA_PIN 21
+#define SCL_PIN 22
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// ===============================
+//       REYAX LoRa PINS
+// ===============================
+#define RXD1 5
+#define TXD1 4
+
+// ===============================
+//       KEYPAD DEFINITIONS
+// ===============================
+const byte ROWS = 4;
+const byte COLS = 4;
+
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {23, 26, 25, 27};
+byte colPins[COLS] = {32, 13, 12, 19};
+
+Adafruit_Keypad customKeypad = Adafruit_Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// ===============================
+//           SETUP
+// ===============================
+void setup() {
+  Serial.begin(115200);
+  while (!Serial);
+
+  // --- LoRa Serial ---
+  Serial1.begin(115200, SERIAL_8N1, RXD1, TXD1);
+  Serial.println("RYLR896 LoRa Module Initialized");
+
+  // --- OLED INIT ---
+  Wire.begin(SDA_PIN, SCL_PIN);
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    while (1);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Initializing LoRa...");
+  display.display();
+
+  // --- SEND INITIAL LoRa AT COMMANDS ---
+  sendATCommand("AT");
+  sendATCommand("AT+ADDRESS=77");
+  sendATCommand("AT+NETWORKID=13");
+  sendATCommand("AT+ADDRESS?");
+  sendATCommand("AT+NETWORKID?");
+
+  // --- KEYPAD INIT ---
+  customKeypad.begin();
+}
+
+// ===============================
+//           MAIN LOOP
+// ===============================
+void loop() {
+
+  customKeypad.tick();
+  while (customKeypad.available()) {
+    keypadEvent e = customKeypad.read();
+    char key = (char)e.bit.KEY;
+
+    if (e.bit.EVENT == KEY_JUST_PRESSED) {
+
+      String command = "";
+      String message = "";  // <-- This is what will show on OLED
+
+      // ===============================
+      //     MESSAGE MAPPING LOGIC
+      // ===============================
+      switch (key) {
+
+        case 'A':
+          command = "AT";
+          message = "T3ZN#T";
+          break;
+
+        case 'B':
+          command = "AT+CPIN?";
+          message = "B";
+          break;
+
+        case 'C':
+          command = "AT+IPR?";
+          message = "C";
+          break;
+
+        case 'D':
+          command = "AT+VER?";
+          message = "D";
+          break;
+
+        // ------- SEND MESSAGE KEYS -------
+        case '1':
+          command = "AT+SEND=0,13,1";
+          message = "1";
+          break;
+
+        case '2':
+          command = "AT+SEND=0,13,2";
+          message = "2";
+          break;
+
+        
+        case '3':
+          command = "AT+SEND=0,13,3";
+          message = "3";
+          break;
+
+        case '4':
+          command = "AT+SEND=0,13,4";
+          message = "4";
+          break;
+
+        case '5':
+          command = "AT+SEND=0,13,5";
+          message = "5";
+          break;
+
+        case '6':
+          command = "AT+SEND=0,13,6";
+          message = "6";
+          break;
+
+        case '7':
+          command = "AT+SEND=0,13,7";
+          message = "7";
+          break;
+
+        case '8':
+          command = "AT+SEND=0,13,8";
+          message = "8";
+          break;
+
+        case '9':
+          command = "AT+SEND=0,13,9";
+          message = "9";
+          break;
+
+        case '*':
+          command = "AT+SEND=0,13,M0B1L1Z#";
+          message = "GO";
+          break;
+
+        case '0':
+          command = "AT+SEND=0,13,S.O.S.";
+          message = "S.O.S. sent";
+          break;
+
+
+        case '#':
+          command = "AT+SEND=0,13, SVABODA";
+          message = "---";
+          break;
+
+
+        // Default raw key output
+        default:
+          Serial1.print(key);
+          message = String(key);
+          break;
+      }
+
+      // ---- SEND COMMAND ----
+      if (command.length() > 0) {
+        sendATCommand(command);
+      }
+
+      // ---- DISPLAY ONLY THE MESSAGE ----
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("Message Sent:");
+      display.print(">> ");
+      display.println(message);
+      display.display();
+
+      Serial.print("Message Sent: ");
+      Serial.println(message);
+    }
+
+    else if (e.bit.EVENT == KEY_JUST_RELEASED) {
+      Serial.println(" released");
+    }
+  }
+
+  // --- CHECK LORA RESPONSE ---
+  if (Serial1.available()) {
+    String response = Serial1.readString();
+
+    Serial.print("LoRa Module Response: ");
+    Serial.println(response);
+
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("LoRa Response:");
+    display.println(response);
+    display.display();
+  }
+
+  delay(25);
+}
+
+// ===============================
+//     LoRa AT COMMAND FUNCTION
+// ===============================
+void sendATCommand(String command) {
+  Serial1.println(command);
+  Serial.print("Sent: ");
+  Serial.println(command);
+  delay(1000);
+}
